@@ -8,12 +8,15 @@ import struct
 import cchardet as chdet
 import typing as tp
 
+
 class PySAMPQuery_Utils:
     """
     This class is used for utility functions used by the library in another modules
     """
 
-    MAX_LATENCY_VARIABILITY = 5 # the ratio between the latency in max/min can't be higher than this
+    MAX_LATENCY_VARIABILITY = (
+        5  # the ratio between the latency in max/min can't be higher than this
+    )
 
     @staticmethod
     def encode_codepage(string: str) -> bytes:
@@ -31,8 +34,10 @@ class PySAMPQuery_Utils:
                 return string.encode(f"cp{cp}")
             except UnicodeEncodeError:
                 continue
-        raise UnicodeEncodeError('cp1252', string, 0, len(string), 'The string can\'t be encoded')
-    
+        raise UnicodeEncodeError(
+            "cp1252", string, 0, len(string), "The string can't be encoded"
+        )
+
     @staticmethod
     def pack_string(string: str, len_type: str) -> bytes:
         """
@@ -45,9 +50,9 @@ class PySAMPQuery_Utils:
         :return: The packed string
         :rtype: bytes
         """
-        fmt = f'<{len_type}'
+        fmt = f"<{len_type}"
         return struct.pack(fmt, len(string)) + PySAMPQuery_Utils.encode_codepage(string)
-    
+
     def unpack_string(data: bytes, len_type: str) -> tuple[str, bytes, str]:
         """
         Unpack a string from bytes with a length prefix.
@@ -58,13 +63,17 @@ class PySAMPQuery_Utils:
                 encoding.
         :rtype: tuple[str, bytes]
         """
-        format = f'<{len_type}'
+        format = f"<{len_type}"
         size = struct.calcsize(format)
-        str_len, data = *struct.unpack_from(format, data), data[size:] # we get the length and the rest of the data as a tuple :)
+        str_len, data = (
+            *struct.unpack_from(format, data),
+            data[size:],
+        )  # we get the length and the rest of the data as a tuple :)
         string, data = data[:str_len], data[str_len:]
-        encoding = chdet.detect(string)['encoding'] or 'ascii'
+        encoding = chdet.detect(string)["encoding"] or "ascii"
         return string.decode(encoding), data, encoding
-    
+
+
 class PySAMPQuery_Encodings(tp.TypedDict):
     """
     Encoding class information
