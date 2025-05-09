@@ -2,6 +2,7 @@
 This module is used to interact with a given game server
 """
 
+import asyncio
 import socket
 import typing as tp
 
