@@ -2,11 +2,11 @@
 This module is used to interact with a given game server
 """
 
-import asyncio
-import socket
+from __future__ import annotations
+
+import trio
 import typing as tp
 
-from __future__ import annotations
 from dataclasses import dataclass, field
 from random import getrandbits
 
@@ -31,25 +31,21 @@ class PySAMPQuery_Client:
     port: int
     rcon_password: str | None = field(default=None, repr=False)
     prefix: bytes | None = field(default=None, repr=False)
-    __socket: socket.SocketType | None = field(default=None, repr=False)
+    __socket: trio.socket.SocketType | None = field(default=None, repr=False)
 
     async def __connect(self) -> None:
         """Connect to the server and save the prefix needed for the queries."""
-        family, type, proto, _, (ip, *_) = (
-            await socket.getaddrinfo(
-                self.ip,
-                self.port,
-                family=socket.AF_INET,
-                proto=socket.IPPROTO_TCP,
-            )
-        )[0]
+        family, type, proto, _, (ip, *_) = (await trio.socket.getaddrinfo(
+            self.ip,
+            self.port,
+            family=trio.socket.AF_INET,
+            proto=trio.socket.IPPROTO_UDP
+        ))[0]
         self.ip = ip
-        self.__socket = _socket = socket.socket(
-            family, type, proto
-        )  # now we have a socket to connect to the server
+        self.__socket = _socket = trio.socket.socket(family, type, proto)
         await _socket.connect((self.ip, self.port))
         self.prefix = (
-            b"SA:MP" + socket.inet_aton(self.ip) + self.port.to_bytes(2, "little")
+            b"SAMP" + trio.socket.inet_aton(self.ip) + self.port.to_bytes(2, "little")
         )
 
     async def __send(self, opcode: bytes, payload: bytes = b"") -> None:
@@ -72,12 +68,12 @@ class PySAMPQuery_Client:
         :return bytes: The packet received
         """
         assert self.__socket
-        while True:
-            data = await self.__socket.recv(
-                4096
-            )  # 4096 is the maximum size of a packet
-            if data.startswith(header):
-                return data[len(header) :]
+        with trio.move_on_after(5):  # Timeout de 5 segundos
+            while True:
+                data = await self.__socket.recv(4096)  # 4096 bytes es el tamaño máximo de un paquete UDP
+                if data.startswith(header):
+                    return data[len(header) :]
+        raise TimeoutError("No se recibió respuesta del servidor dentro del tiempo límite.")
 
     async def __ping(self) -> float:
         """
@@ -86,12 +82,12 @@ class PySAMPQuery_Client:
         :return float: The time it took to receive the packet
         """
         payload = getrandbits(32).to_bytes(4, "little")
-        starttime = asyncio.get_running_loop().time()
+        starttime = trio.current_time()
         await self.__send(b"p", payload)
         assert self.prefix
         data = await self.__receive(header=self.prefix + b"p" + payload)
         assert not data
-        return asyncio.get_running_loop().time() - starttime
+        return trio.current_time() - starttime
 
     async def __is_omp(self) -> bool:
         """
@@ -101,20 +97,12 @@ class PySAMPQuery_Client:
         """
         ping = await self.__ping()
         payload = getrandbits(32).to_bytes(4, "little")
-        with self.__socket:
-            await self.__socket.settimeout(
-                ping * PySAMPQuery_Utils.MAX_LATENCY_VARIABILITY
-            )
-            try:
-                await self.__send(b"o", payload)
-                assert self.prefix
-                data = await self.__receive(header=self.prefix + b"o" + payload)
-                assert (
-                    not data
-                )  # no data beyond the header should be received when the server is an OpenMP server
-                return True
-            except asyncio.TimeoutError:
-                pass
+        with trio.move_on_after(PySAMPQuery_Utils.MAX_LATENCY_VARIABILITY * ping):
+            await self.__send(b"o", payload)
+            assert self.prefix
+            data = await self.__receive(header=self.prefix + b"o" + payload)
+            assert not data
+            return True
         return False
 
     async def info(self) -> PySAMPQuery_Server:
