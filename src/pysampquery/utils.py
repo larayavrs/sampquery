@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import struct
 import cchardet as chdet
+import typing as tp
 
 class PySAMPQuery_Utils:
     """
@@ -64,3 +65,17 @@ class PySAMPQuery_Utils:
         encoding = chdet.detect(string)['encoding'] or 'ascii'
         return string.decode(encoding), data, encoding
     
+class PySAMPQuery_Encodings(tp.TypedDict):
+    """
+    Encoding class information
+
+    NOTE: I dont know if this is the best place to put this class
+
+    :param str name: The name of the encoding
+    :param str gamemode: The gamemode of the encoding
+    :param str language: The language of the encoding
+    """
+
+    name: str
+    gamemode: str
+    language: str
