@@ -1,5 +1,5 @@
 [project]
-name = "pysampquery"
+name = "sampquery"
 version = "0.0.1"
 description = "A better and fixed SA:MP Query Client written in Python"
 authors = [
@@ -14,18 +14,21 @@ classifiers = [
 ]
 dependencies = [
   "trio",
-  "faust-cchardet",
-  "asyncio",
+  "faust-cchardet"
 ]
 
+[project.urls]
+Homepage = "https://github.com/larayavrs/sampquery"
+Issues = "https://github.com/larayavrs/sampquery/issues"
+
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
 
 [tool.hatch.build]
 include = [
-    "samp_query/**.py",
-    "samp_query/py.typed",
+    "sampquery/**.py",
+    "sampquery/py.typed",
 ]
 
 [tool.flake8]
