@@ -53,6 +53,7 @@ class PySAMPQuery_Utils:
         fmt = f"<{len_type}"
         return struct.pack(fmt, len(string)) + PySAMPQuery_Utils.encode_codepage(string)
 
+    @staticmethod
     def unpack_string(data: bytes, len_type: str) -> tuple[str, bytes, str]:
         """
         Unpack a string from bytes with a length prefix.
