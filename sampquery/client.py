@@ -14,7 +14,6 @@ from .utils import SAMPQuery_Utils
 from .server import SAMPQuery_Server
 from .player import SAMPQuery_PlayerList
 from .rule import SAMPQuery_RuleList
-from .exceptions import SAMPQuery_Timeout
 
 
 @dataclass
@@ -69,12 +68,12 @@ class SAMPQuery_Client:
         :return bytes: The packet received
         """
         assert self.__socket
-        with trio.move_on_after(5):  # Timeout de 5 segundos
+        with trio.move_on_after(10):  # Timeout after 10 seconds
             while True:
-                data = await self.__socket.recv(4096)  # 4096 bytes es el tamaño máximo de un paquete UDP
+                data = await self.__socket.recv(4096)  # 4096 bytes per packet
                 if data.startswith(header):
                     return data[len(header) :]
-        raise SAMPQuery_Timeout("Timeout reached")
+        raise TimeoutError
 
     async def __ping(self) -> float:
         """
