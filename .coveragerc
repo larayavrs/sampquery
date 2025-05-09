@@ -1,0 +1,9 @@
+[paths]
+source =
+   pysampquery
+
+[report]
+include =
+    pysampquery/*
+omit =
+    */test/*
