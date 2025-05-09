@@ -10,14 +10,15 @@ import typing as tp
 from dataclasses import dataclass, field
 from random import getrandbits
 
-from .utils import PySAMPQuery_Utils
-from .server import PySAMPQuery_Server
-from .player import PySAMPQuery_PlayerList
-from .rule import PySAMPQuery_RuleList
+from .utils import SAMPQuery_Utils
+from .server import SAMPQuery_Server
+from .player import SAMPQuery_PlayerList
+from .rule import SAMPQuery_RuleList
+from .exceptions import SAMPQuery_Timeout
 
 
 @dataclass
-class PySAMPQuery_Client:
+class SAMPQuery_Client:
     """
     This class is used for interact with a SA:MP/OMP server.
 
@@ -73,7 +74,7 @@ class PySAMPQuery_Client:
                 data = await self.__socket.recv(4096)  # 4096 bytes es el tamaño máximo de un paquete UDP
                 if data.startswith(header):
                     return data[len(header) :]
-        raise TimeoutError("No se recibió respuesta del servidor dentro del tiempo límite.")
+        raise SAMPQuery_Timeout("Timeout reached")
 
     async def __ping(self) -> float:
         """
@@ -97,7 +98,7 @@ class PySAMPQuery_Client:
         """
         ping = await self.__ping()
         payload = getrandbits(32).to_bytes(4, "little")
-        with trio.move_on_after(PySAMPQuery_Utils.MAX_LATENCY_VARIABILITY * ping):
+        with trio.move_on_after(SAMPQuery_Utils.MAX_LATENCY_VARIABILITY * ping):
             await self.__send(b"o", payload)
             assert self.prefix
             data = await self.__receive(header=self.prefix + b"o" + payload)
@@ -105,35 +106,35 @@ class PySAMPQuery_Client:
             return True
         return False
 
-    async def info(self) -> PySAMPQuery_Server:
+    async def info(self) -> SAMPQuery_Server:
         """
         This method is used to get the server information
 
-        :return PySAMPQuery_Server: The server information
+        :return SAMPQuery_Server: The server information
         """
         await self.__send(b"i")
         assert self.prefix
         data = await self.__receive(header=self.prefix + b"i")
-        return PySAMPQuery_Server.from_data(data)
+        return SAMPQuery_Server.from_data(data)
 
-    async def players(self) -> PySAMPQuery_PlayerList:
+    async def players(self) -> SAMPQuery_PlayerList:
         """
         This method is used to get the player list
 
-        :return PySAMPQuery_PlayerList: The player list
+        :return SAMPQuery_PlayerList: The player list
         """
         await self.__send(b"c")
         assert self.prefix
         data = await self.__receive(header=self.prefix + b"c")
-        return PySAMPQuery_PlayerList.from_data(data)
+        return SAMPQuery_PlayerList.from_data(data)
 
-    async def rules(self) -> PySAMPQuery_RuleList:
+    async def rules(self) -> SAMPQuery_RuleList:
         """
         This method is used to get the rules list
 
-        :return PySAMPQuery_RuleList: The rules list
+        :return SAMPQuery_RuleList: The rules list
         """
         await self.__send(b"r")
         assert self.prefix
         data = await self.__receive(header=self.prefix + b"r")
-        return PySAMPQuery_RuleList.from_data(data)
+        return SAMPQuery_RuleList.from_data(data)

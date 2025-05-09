@@ -1,8 +1,8 @@
 from trio import run
-from pysampquery import PySAMPQuery_Client
+from sampquery import SAMPQuery_Client
 
 async def main():
-    latam = PySAMPQuery_Client(
+    latam = SAMPQuery_Client(
         ip='144.217.174.214',
         port=6969,
         rcon_password=None

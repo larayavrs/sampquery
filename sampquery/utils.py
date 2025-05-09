@@ -9,7 +9,7 @@ import cchardet as chdet
 import typing as tp
 
 
-class PySAMPQuery_Utils:
+class SAMPQuery_Utils:
     """
     This class is used for utility functions used by the library in another modules
     """
@@ -51,7 +51,7 @@ class PySAMPQuery_Utils:
         :rtype: bytes
         """
         fmt = f"<{len_type}"
-        return struct.pack(fmt, len(string)) + PySAMPQuery_Utils.encode_codepage(string)
+        return struct.pack(fmt, len(string)) + SAMPQuery_Utils.encode_codepage(string)
 
     @staticmethod
     def unpack_string(data: bytes, len_type: str) -> tuple[str, bytes, str]:
@@ -75,7 +75,7 @@ class PySAMPQuery_Utils:
         return string.decode(encoding), data, encoding
 
 
-class PySAMPQuery_Encodings(tp.TypedDict):
+class SAMPQuery_Encodings(tp.TypedDict):
     """
     Encoding class information
 

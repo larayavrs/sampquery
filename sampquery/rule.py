@@ -6,11 +6,11 @@ from __future__ import annotations
 
 import struct
 from dataclasses import dataclass
-from .utils import PySAMPQuery_Utils
+from .utils import SAMPQuery_Utils
 
 
 @dataclass
-class PySAMPQuery_Rule:
+class SAMPQuery_Rule:
     """
     Class Rule represents the server rule
 
@@ -24,41 +24,41 @@ class PySAMPQuery_Rule:
     encoding: str
 
     @classmethod
-    def from_data(cls, data: bytes) -> tuple[PySAMPQuery_Rule, bytes]:
+    def from_data(cls, data: bytes) -> tuple[SAMPQuery_Rule, bytes]:
         """
         Creates a rule from raw data
 
         :param bytes data: The raw data to parse into rule information
-        :return tuple[PySAMPQuery_Rule, bytes]: An instance of rule with the parsed data and the remaining data
+        :return tuple[SAMPQuery_Rule, bytes]: An instance of rule with the parsed data and the remaining data
         """
-        name, data, _ = PySAMPQuery_Utils.unpack_string(data, "B")
-        value, data, encoding = PySAMPQuery_Utils.unpack_string(data, "B")
+        name, data, _ = SAMPQuery_Utils.unpack_string(data, "B")
+        value, data, encoding = SAMPQuery_Utils.unpack_string(data, "B")
         return cls(name=name, value=value, encoding=encoding), data
 
 
 @dataclass
-class PySAMPQuery_RuleList:
+class SAMPQuery_RuleList:
     """
     Represents a list of the server rules
 
-    :param list[PySAMPQuery_Rule] rules: The list of rules
+    :param list[SAMPQuery_Rule] rules: The list of rules
     """
 
-    rules: list[PySAMPQuery_Rule]
+    rules: list[SAMPQuery_Rule]
 
     @classmethod
-    def from_data(cls, data: bytes) -> PySAMPQuery_RuleList:
+    def from_data(cls, data: bytes) -> SAMPQuery_RuleList:
         """
-        Creates an instance of PySAMPQuery_RuleList from raw data
+        Creates an instance of SAMPQuery_RuleList from raw data
 
         :param bytes data: The raw data to parse into rule list information
-        :return PySAMPQuery_RuleList: An instance of PySAMPQuery_RuleList with the parsed data
+        :return SAMPQuery_RuleList: An instance of SAMPQuery_RuleList with the parsed data
         """
         rcount = struct.unpack_from("<H", data)[0]
         data = data[2:]
         rules = []
         for _ in range(rcount):
-            rule, data = PySAMPQuery_Rule.from_data(data)
+            rule, data = SAMPQuery_Rule.from_data(data)
             rules.append(rule)
         assert not data
         return cls(rules=rules)
