@@ -80,3 +80,5 @@ async def main():
 
 run(main)
 ```
+
+Thanks for using SA:MP Query, you can report any issues or suggestions [here](https://github.com/larayavrs/sampquery/issues)
