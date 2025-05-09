@@ -2,9 +2,9 @@
 In this module we storage the rules of the server
 """
 
-import struct
-
 from __future__ import annotations
+
+import struct
 from dataclasses import dataclass
 from .utils import PySAMPQuery_Utils
 
