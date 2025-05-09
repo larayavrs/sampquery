@@ -15,7 +15,7 @@
 You can install the package using:
 
 ```bash
-pip install sampquery
+pip install py-sampquery
 ```
 
 ### Usage
