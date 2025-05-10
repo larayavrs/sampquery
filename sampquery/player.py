@@ -93,34 +93,26 @@ class SAMPQuery_PlayerList:
         """
         if not data:
             return cls(players=[])
-
-        num_clients = struct.unpack_from("<H", data, 0)[0]
+        clients = struct.unpack_from("<H", data, 0)[0]
         offset = 2
-
         players = []
-        for _ in range(num_clients):
+        for _ in range(clients):
             if offset >= len(data):
-                print(f"Warning: Incomplete data for player {_ + 1}/{num_clients}.")
+                print(f"Warning: Incomplete data for player {_ + 1}/{clients}.")
                 break
-
             player_id = struct.unpack_from("<B", data, offset)[0]
             offset += 1
-
             name, offset = SAMPQuery_Utils.unpack_string_with_offset(data, offset, "B")
-
             if offset + 4 > len(data):
                 print(f"Warning: Incomplete score data for player {name}.")
                 break
             score = struct.unpack_from("<i", data, offset)[0]
             offset += 4
-
             if offset + 4 > len(data):
                 print(f"Warning: Incomplete ping data for player {name}.")
                 break
             ping = struct.unpack_from("<i", data, offset)[0]
             offset += 4
-
             player = SAMPQuery_Player(name=name, player_id=player_id, score=score, ping=ping)
             players.append(player)
-
         return cls(players=players)
