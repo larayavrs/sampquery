@@ -62,3 +62,15 @@ class SAMPQuery_RuleList:
             rules.append(rule)
         assert not data
         return cls(rules=rules)
+
+    def get(self, name: str) -> SAMPQuery_Rule | None:
+        """
+        Returns the rule with the given name
+
+        :param str name: The name of the rule to get
+        :return SAMPQuery_Rule | None: The rule with the given name or None if not found
+        """
+        for rule in self.rules:
+            if rule.name == name:
+                return rule
+        return None
