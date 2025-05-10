@@ -74,6 +74,26 @@ class SAMPQuery_Utils:
         encoding = chdet.detect(string)["encoding"] or "ascii"
         return string.decode(encoding), data, encoding
 
+    @staticmethod
+    def unpack_string_with_offset(data: bytes, offset: int, length_format: str) -> tuple[str, int]:
+        """
+        Unpacks a string from the given data starting at the specified offset.
+
+        :param bytes data: The raw data to parse.
+        :param int offset: The current offset in the data.
+        :param str length_format: The format of the length prefix (e.g., "B" for 1 byte).
+        :return tuple[str, int]: The unpacked string and the new offset.
+        """
+        if offset >= len(data):
+            raise ValueError("Offset exceeds data length.")
+        length = struct.unpack_from(length_format, data, offset)[0]
+        offset += struct.calcsize(length_format)
+        if offset + length > len(data):
+            raise ValueError("String data exceeds buffer length.")
+        string = data[offset:offset + length].decode("utf-8")
+        offset += length
+        return string, offset
+
 
 class SAMPQuery_Encodings(tp.TypedDict):
     """
