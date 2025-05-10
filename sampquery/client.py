@@ -137,3 +137,14 @@ class SAMPQuery_Client:
         assert self.prefix
         data = await self.__receive(header=self.prefix + b"r")
         return SAMPQuery_RuleList.from_data(data)
+
+    async def detailed_players(self) -> SAMPQuery_PlayerList:
+        """
+        This method is used to get the detailed player list.
+
+        :return SAMPQuery_PlayerList: The detailed player list.
+        """
+        await self.__send(b"d")
+        assert self.prefix
+        data = await self.__receive(header=self.prefix + b"d")
+        return SAMPQuery_PlayerList.from_detailed_data(data)
