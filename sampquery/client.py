@@ -14,6 +14,7 @@ from .utils import SAMPQuery_Utils
 from .server import SAMPQuery_Server
 from .player import SAMPQuery_PlayerList
 from .rule import SAMPQuery_RuleList
+from .exceptions import SAMPQuery_TooManyPlayers
 
 
 @dataclass
@@ -66,14 +67,20 @@ class SAMPQuery_Client:
 
         :param bytes header: The header of the packet to receive
         :return bytes: The packet received
+        :raises TimeoutError: If the server does not respond within the timeout period.
         """
         assert self.__socket
-        with trio.move_on_after(10):  # Timeout after 10 seconds
-            while True:
-                data = await self.__socket.recv(4096)  # 4096 bytes per packet
-                if data.startswith(header):
-                    return data[len(header) :]
-        raise TimeoutError
+        try:
+            with trio.move_on_after(20):  # TODO: verify if this is enough for longer queries
+                while True:
+                    data = await self.__socket.recv(4096)  # 4096 bytes per packet
+                    if data.startswith(header):
+                        return data[len(header):]
+            raise TimeoutError("The server did not respond within the timeout period.")
+        except TimeoutError as e:
+            raise TimeoutError(
+                f"Failed to receive data from the server. Reason: {str(e)}"
+            ) from e
 
     async def __ping(self) -> float:
         """
@@ -118,14 +125,28 @@ class SAMPQuery_Client:
 
     async def players(self) -> SAMPQuery_PlayerList:
         """
-        This method is used to get the player list
+        This method is used to get the player list.
 
-        :return SAMPQuery_PlayerList: The player list
+        :return SAMPQuery_PlayerList: The player list.
+        :raises SAMPQuery_TooManyPlayers: If the server has too many connected players.
+        :raises TimeoutError: If the server does not respond in time.
         """
+        server_info = await self.info()
+        if server_info.players > 100:  # maximum limit according to SA:MP documentation
+            raise SAMPQuery_TooManyPlayers(
+                f"Server has too many players ({server_info.players}) and cannot retrieve the player list."
+            )
         await self.__send(b"c")
         assert self.prefix
-        data = await self.__receive(header=self.prefix + b"c")
-        return SAMPQuery_PlayerList.from_data(data)
+        try:
+            data = await self.__receive(header=self.prefix + b"c")
+            return SAMPQuery_PlayerList.from_data(data)
+        except TimeoutError as e:
+            raise TimeoutError(
+                "Failed to retrieve player list due to a timeout. The server may be unresponsive."
+            ) from e
+        except Exception as e:
+            raise RuntimeError(f"An unexpected error occurred: {str(e)}") from e
 
     async def rules(self) -> SAMPQuery_RuleList:
         """
@@ -143,8 +164,23 @@ class SAMPQuery_Client:
         This method is used to get the detailed player list.
 
         :return SAMPQuery_PlayerList: The detailed player list.
+        :raises SAMPQuery_TooManyPlayers: If the server has too many connected players.
+        :raises TimeoutError: If the server does not respond in time.
         """
+        server_info = await self.info()
+        if server_info.players > 100:
+            raise SAMPQuery_TooManyPlayers(
+                f"Server has too many players ({server_info.players}) and cannot retrieve the detailed player list."
+            )
+        # yeah, if the player count is within the limit, proceed with the query
         await self.__send(b"d")
         assert self.prefix
-        data = await self.__receive(header=self.prefix + b"d")
-        return SAMPQuery_PlayerList.from_detailed_data(data)
+        try:
+            data = await self.__receive(header=self.prefix + b"d")
+            return SAMPQuery_PlayerList.from_detailed_data(data)
+        except TimeoutError as e:
+            raise TimeoutError(
+                "Failed to retrieve detailed player list due to a timeout. The server may be unresponsive."
+            ) from e
+        except Exception as e:
+            raise RuntimeError(f"An unexpected error occurred: {str(e)}") from e
