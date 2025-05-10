@@ -184,3 +184,21 @@ class SAMPQuery_Client:
             ) from e
         except Exception as e:
             raise RuntimeError(f"An unexpected error occurred: {str(e)}") from e
+        
+    async def lagcomp(self) -> str:
+        """
+        This method determines whether the server uses lagshot or skinshot based on the 'lagcomp' rule.
+
+        :return str: "skinshot" if lagcomp is On, "lagshot" if lagcomp is Off.
+        :raises ValueError: If the 'lagcomp' rule is not found.
+        """
+        server_rules = await self.rules()
+        lagcomp_rule = server_rules.get("lagcomp")
+        if lagcomp_rule is None:
+            raise ValueError("The 'lagcomp' rule is not available on this server.")
+        if lagcomp_rule.value.lower() == "on":
+            return "skinshot"
+        elif lagcomp_rule.value.lower() == "off":
+            return "lagshot"
+        else:
+            raise ValueError(f"Unexpected value for 'lagcomp': {lagcomp_rule.value}")
