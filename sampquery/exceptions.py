@@ -27,3 +27,7 @@ class SAMPQuery_InvalidPort(Exception):
 class SAMPQuery_Timeout(Exception):
     """Raised when timeout is reached"""
     pass
+
+class SAMPQuery_TooManyPlayers(Exception):
+    """Raised when the server has too many connected players to retrieve data."""
+    pass
