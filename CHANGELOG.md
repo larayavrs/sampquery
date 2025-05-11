@@ -1,6 +1,6 @@
 ## sampquery | Changelog tracking
 
-### v0.0.5 | 10.05.2025 [0f57685](https://github.com/larayavrs/sampquery/commit/0f5768517c83843ae2159e585d7573ad8416ebcf)
+### v0.0.6 | 10.05.2025 [0f57685](https://github.com/larayavrs/sampquery/commit/0f5768517c83843ae2159e585d7573ad8416ebcf)
 
 - Now [you can get the lagcomp mode](./examples/new-example.py) using the **`lagcomp()`** method.
 - We now support player limiter queries using exception handler.
