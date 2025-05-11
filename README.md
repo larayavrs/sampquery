@@ -4,7 +4,7 @@ Better, flexible, re-written and fast SA:MP/OMP query server client
 <div align="left">
     <img src="https://img.shields.io/badge/python-000000?style=for-the-badge&logo=python&logoColor=white"/>
     <img src="https://img.shields.io/badge/Windows-000000?style=for-the-badge&logo=windows&logoColor=ffffff"/>
-    <img src="https://img.shields.io/badge/version-0.0.5-black?style=for-the-badge"/>
+    <img src="https://img.shields.io/badge/version-0.0.6-black?style=for-the-badge"/>
 </div>
 
 <hr />
