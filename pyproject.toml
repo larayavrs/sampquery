@@ -1,6 +1,6 @@
 [project]
 name = "py_sampquery"
-version = "0.0.5"
+version = "0.0.6"
 description = "A better and fixed SA:MP Query Client written in Python"
 authors = [
     { name = "Leo Araya", email = "larayavrs@gmail.com" }
