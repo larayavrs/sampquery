@@ -102,7 +102,7 @@ class SAMPQuery_Constants:
     MAX_PLAYER_NAME_LENGTH = 32
     """The maximum length of a player name"""
 
-    MENU_COMMANDS = ["players", "rules", "version", "info", "lagcomp", "exit"]
+    MENU_COMMANDS = ["players", "rules", "info", "lagcomp", "exit"]
     """List of menu commands"""
 
 
