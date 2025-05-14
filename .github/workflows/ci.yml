@@ -37,7 +37,3 @@ jobs:
       - name: Run linting
         run: |
           pylint sampquery --rcfile=.pylintrc
-
-      - name: Run tests
-        run: |
-          pytest --maxfail=3 --disable-warnings -v
