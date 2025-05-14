@@ -18,6 +18,7 @@ important data through mechanisms based on a UDP packet system provided by SA:MP
 
 ### New interactive interface
 > **NOTE:** Currently unavailable, we are working for a _stable_ version.
+
 ![menu](https://github.com/user-attachments/assets/f039e93b-432e-4138-bb0b-9ac57ad5d1cc)
 
 
