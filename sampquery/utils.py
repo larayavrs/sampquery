@@ -94,6 +94,17 @@ class SAMPQuery_Utils:
         offset += length
         return string, offset
 
+class SAMPQuery_Constants:
+    """
+    This class is used for constants used by the library in another modules
+    """
+
+    MAX_PLAYER_NAME_LENGTH = 32
+    """The maximum length of a player name"""
+
+    MENU_COMMANDS = ["players", "rules", "version", "info", "lagcomp", "exit"]
+    """List of menu commands"""
+
 
 class SAMPQuery_Encodings(tp.TypedDict):
     """
