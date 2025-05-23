@@ -30,6 +30,47 @@ def show_commands():
     for command in SAMPQuery_Constants.MENU_COMMANDS:
         print(f"- {command}", end="\n")
 
+async def monitor_command(
+    client: SAMPQuery_Client, 
+    what: str, 
+    interval: int = 5
+) -> None:
+    """
+    Periodically queries the server for the specified information and prints the result.
+
+    :param client: The SAMPQuery_Client object used to query the server.
+    :param what: The type of information to monitor ('players' or 'info').
+    :param interval: The time interval in seconds between each query (default is 5 seconds).
+    """
+    color.green(f"Entering monitor mode for '{what}' (refresh every {interval} seconds). Press Ctrl+C to stop.")
+    try:
+        while True:
+            time.sleep(2)
+            os.system("cls" if os.name == "nt" else "clear")
+            if what == "players":
+                players_list = await client.players()
+                print(f"Players ({len(players_list.players)}):")
+                for player in players_list.players:
+                    print(f"* {player.name} | Score: {player.score}")
+            elif what == "info":
+                info = await client.info()
+                print(f"* {info.name} | Players: {info.players}/{info.max_players}")
+                print(f"* Gamemode: {info.gamemode} | Language: {info.language}")
+            elif what == "rules":
+                rules = await client.rules()
+                for rule in rules.rules:
+                    color.bg_bright_green(f"* {rule.name}: {rule.value}")
+            elif what == "lagcomp":
+                lagcompmode = await client.lagcomp()
+                color.bg_bright_green(f"The server is: {lagcompmode}")
+            else:
+                color.red("Invalid monitor target. Use 'help' to see available commands.")
+                break
+            print("\nPress Ctrl+C to exit monitor mode.")
+            await trio.sleep(interval)
+    except KeyboardInterrupt:
+        color.yellow("Monitor mode stopped.")
+
 async def menu(client: SAMPQuery_Client, ip: str, port: int) -> None:
     """
     This function is the main interactive menu of the program. It sets the window title to the server name and port, and then enters a loop where it continually prompts the user for a command and executes it.
@@ -81,6 +122,16 @@ async def menu(client: SAMPQuery_Client, ip: str, port: int) -> None:
                 color.bg_bright_green(f"The server is: {lagcompmode}")
             except ValueError as e:
                 color.red(f"Error determining shot type: {e}")
+        elif command.startswith("monitor"):
+            parts = command.split()
+            if len(parts) < 2 or parts[1] not in ("players", "info"):
+                color.yellow("Usage: monitor <players|info> [interval_seconds]")
+            else:
+                interval = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else 5
+                try:
+                    await monitor_command(client, parts[1], interval)
+                except KeyboardInterrupt:
+                    color.yellow("Monitor mode stopped.")
         else:
             color.red("Invalid command. Use 'help' to see available commands.")
 
