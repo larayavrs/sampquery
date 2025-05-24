@@ -14,7 +14,12 @@ from .utils import SAMPQuery_Utils
 from .server import SAMPQuery_Server
 from .player import SAMPQuery_PlayerList
 from .rule import SAMPQuery_RuleList
-from .exceptions import SAMPQuery_TooManyPlayers
+
+from .exceptions import ( 
+    SAMPQuery_TooManyPlayers, 
+    SAMPQuery_DisabledRCON, 
+    SAMPQuery_InvalidRCON 
+)
 
 
 @dataclass
@@ -202,3 +207,51 @@ class SAMPQuery_Client:
             return "lagshot"
         else:
             raise ValueError(f"Unexpected value for 'lagcomp': {lagcomp_rule.value}")
+        
+    async def rcon(self, command: str) -> str:
+        """
+        This method is used to execute a command on the server using RCON.
+
+        :param str command: The command to execute.
+        :return str: The response from the server.
+
+        :raises SAMPQuery_DisabledRCON: If the RCON password is missing or disabled.
+        :raises SAMPQuery_InvalidRCON: If the RCON password is invalid.
+        """
+        if not self.rcon_password:
+            raise SAMPQuery_DisabledRCON(
+                "RCON password is missing. Please provide a valid RCON password."
+            )
+        ping = await self.__ping()
+        payload = (
+            getrandbits(32).to_bytes(4, "little") 
+            + self.rcon_password.encode() 
+            + command.encode()
+        )
+        await self.__send(b"x", payload) # 0x78 packet for RCON purposes
+        assert self.prefix
+        try:
+            with trio.move_on_after(
+                SAMPQuery_Utils.MAX_LATENCY_VARIABILITY * ping
+            ) as cancel_scope:
+                while True:
+                    start = trio.current_time()
+                    data = await self.__receive(header=self.prefix + b"x" + payload)
+                    receive_duraton = trio.current_time() - start
+                    line, data, _ = SAMPQuery_Utils.unpack_string(data, 'H')
+                    assert not data
+                    response = line + '\n'
+                    cancel_scope.deadline += receive_duraton
+            if not response:
+                raise SAMPQuery_DisabledRCON(
+                    "RCON password is missing. Please provide a valid RCON password."
+                )
+            if response.startswith(b"Invalid RCON password"):
+                raise SAMPQuery_InvalidRCON(
+                    "Invalid RCON password. Please check your RCON password."
+                )
+            return response[:-1].decode("utf-8")
+        except TimeoutError as e:
+            raise TimeoutError(
+                "Failed to retrieve RCON response due to a timeout. The server may be unresponsive."
+            ) from e
