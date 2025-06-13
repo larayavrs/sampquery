@@ -255,3 +255,30 @@ class SAMPQuery_Client:
             raise TimeoutError(
                 "Failed to retrieve RCON response due to a timeout. The server may be unresponsive."
             ) from e
+
+    async def ping_history(self, samples: int = 5, interval: float = 1.0) -> list[float]:
+        """
+        Perform multiple ping measurements to the server and return a list with the results.
+
+        :param samples: Number of measurements to perform.
+        :param interval: Interval in seconds between each measurement.
+        :return: List of ping times (in seconds).
+        """
+        results = []
+        for _ in range(samples):
+            ping = await self.__ping()
+            results.append(ping)
+            if _ < samples - 1:
+                await trio.sleep(interval)
+        return results
+
+    async def server_version(self) -> str:
+        """
+        Retrieve the server version.
+
+        :return str: The server version.
+        """
+        info = await self.info()
+        return getattr(
+            info, "version", "Unknown"
+        )
