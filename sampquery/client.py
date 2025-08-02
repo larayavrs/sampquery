@@ -301,3 +301,36 @@ class SAMPQuery_Client:
         """
         info = await self.info()
         return getattr(info, "max_players", 0) - getattr(info, "players", 0)
+    
+    
+    @classmethod
+    async def players_multi_servers(cls, clients: list[SAMPQuery_Client]) -> list[dict]:
+        """
+        Query multiple servers for their player lists in parallel.
+
+        :param list[SAMPQuery_Client] clients: List of SAMPQuery_Client objects to query.
+        :return list[dict]: List of dictionaries, each containing the server's IP, port, a list of player names, and a status string ("success" or "error").
+        """
+        
+        results = []
+        async def query(client: SAMPQuery_Client):
+            try:
+                player_list = await client.players()
+                players = getattr(player_list, "players", player_list)
+                results.append({
+                    "ip": client.ip,
+                    "port": client.port,
+                    "players": [p.name for p in players],
+                    "status": "success"
+                })
+            except Exception as e:
+                results.append({
+                    "ip": client.ip,
+                    "port": client.port,
+                    "status": "error",
+                    "error": str(e)
+                })
+        async with trio.open_nursery() as nursery:
+            for client in clients:
+                nursery.start_soon(query, client)
+        return results
