@@ -1,6 +1,6 @@
 [project]
 name = "py_sampquery"
-version = "0.0.6"
+version = "0.0.9"
 description = "A better and fixed SA:MP Query Client written in Python"
 authors = [
     { name = "Leo Araya", email = "larayavrs@gmail.com" }
@@ -9,8 +9,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
 ]
 dependencies = [
   "trio",
@@ -20,6 +18,10 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/larayavrs/sampquery"
 Issues = "https://github.com/larayavrs/sampquery/issues"
+
+[tool.setuptools.packages.find]
+include = ["sampquery*"]
+exclude = ["assets*"]
 
 [build-system]
 requires = ["setuptools >= 77.0.3"]
